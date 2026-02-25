@@ -1,9 +1,24 @@
 {
-    "java.import.maven.enabled": true,
-    "java.configuration.updateBuildConfiguration": "automatic",
-    "java.compile.nullAnalysis.mode": "automatic",
-    "java.project.sourcePaths": [
-        "src/main/java"
-    ],
-    "java.project.outputPath": "target/classes"
+  "java.import.maven.enabled": true,
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.project.sourcePaths": [
+    "src/main/java"
+  ],
+  "java.project.outputPath": "target/classes",
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "[java]": {
+    "editor.tabSize": 2
+  },
+  "[xml]": {
+    "editor.tabSize": 2
+  },
+  "[json]": {
+    "editor.tabSize": 2
+  },
+  "[properties]": {
+    "editor.tabSize": 2
+  }
 }
