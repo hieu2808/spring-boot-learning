@@ -1,4 +1,4 @@
-package com.example.employee_management.controller;
+package com.example.employee_management.controller.api;
 
 import java.util.List;
 
