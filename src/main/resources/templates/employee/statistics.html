@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Thống kê nhân viên</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <nav th:replace="~{common/navbar :: navbar('statistics')}"></nav>
+  <div class="container mt-4">
+    <h2 class="mb-4">Thống kê nhân viên</h2>
+
+    <!-- Tổng quan -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card text-white bg-primary">
+          <div class="card-body text-center">
+            <h6 class="card-title">Tổng số nhân viên</h6>
+            <p class="card-text display-4" th:text="${stats.totalEmployees}">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-success">
+          <div class="card-body text-center">
+            <h6 class="card-title">Tổng phòng ban</h6>
+            <p class="card-text display-4" th:text="${stats.totalDepartments}">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-info">
+          <div class="card-body text-center">
+            <h6 class="card-title">PB nhiều NV nhất</h6>
+            <p class="card-text fs-4" th:text="${stats.departmentWithMostEmployees}">-</p>
+            <span class="badge bg-light text-dark" th:text="${stats.mostEmployeesCount} + ' nhân viên'">0</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card text-white bg-warning">
+          <div class="card-body text-center">
+            <h6 class="card-title">PB ít NV nhất</h6>
+            <p class="card-text fs-4" th:text="${stats.departmentWithLeastEmployees}">-</p>
+            <span class="badge bg-light text-dark" th:text="${stats.leastEmployeesCount} + ' nhân viên'">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Biểu đồ -->
+    <div class="row mb-4">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">Biểu đồ số lượng nhân viên theo phòng ban</div>
+          <div class="card-body">
+            <canvas id="departmentChart" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card">
+          <div class="card-header">Tỷ lệ nhân viên</div>
+          <div class="card-body">
+            <canvas id="pieChart" height="300"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bảng chi tiết -->
+    <h4 class="mb-3">Chi tiết số lượng nhân viên theo phòng ban</h4>
+    <table class="table table-bordered table-hover">
+      <thead class="table-light">
+        <tr>
+          <th>STT</th>
+          <th>Phòng ban</th>
+          <th>Số lượng nhân viên</th>
+          <th>Tỷ lệ (%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="dept, iterStat : ${stats.departmentStats}">
+          <td th:text="${iterStat.index + 1}"></td>
+          <td th:text="${dept.departmentName}"></td>
+          <td th:text="${dept.employeeCount}"></td>
+          <td th:text="${stats.totalEmployees > 0 ? #numbers.formatDecimal(dept.employeeCount * 100.0 / stats.totalEmployees, 1, 1) : '0.0'} + '%'"></td>
+        </tr>
+      </tbody>
+      <tfoot class="table-secondary">
+        <tr>
+          <td colspan="2"><strong>Tổng cộng</strong></td>
+          <td><strong th:text="${stats.totalEmployees}"></strong></td>
+          <td><strong>100%</strong></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- REST API info -->
+    <div class="card mt-4 mb-4">
+      <div class="card-header bg-secondary text-white">REST API Endpoints</div>
+      <div class="card-body">
+        <ul class="list-unstyled mb-0">
+          <li><code>GET /api/employees/statistics</code> — Toàn bộ thống kê</li>
+          <li><code>GET /api/employees/statistics/total</code> — Tổng số nhân viên</li>
+          <li><code>GET /api/employees/statistics/by-department</code> — Số nhân viên theo phòng ban</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Nút làm mới dữ liệu từ API -->
+    <button class="btn btn-outline-primary mb-4" onclick="refreshFromApi()">
+      &#x21bb; Làm mới dữ liệu từ API
+    </button>
+    <span id="refreshStatus" class="ms-2 text-success" style="display:none;">Đã cập nhật!</span>
+
+    <a class="btn btn-secondary mb-4 ms-2" href="/employees/list">Quay lại danh sách</a>
+  </div>
+
+  <script th:inline="javascript">
+    // Dữ liệu từ Thymeleaf model
+    var departmentStats = /*[[${stats.departmentStats}]]*/ [];
+    var labels = departmentStats.map(function(d) { return d.departmentName; });
+    var data = departmentStats.map(function(d) { return d.employeeCount; });
+
+    var colors = [
+      '#0d6efd', '#198754', '#0dcaf0', '#ffc107', '#dc3545',
+      '#6f42c1', '#fd7e14', '#20c997', '#6610f2', '#d63384'
+    ];
+
+    // Bar Chart
+    new Chart(document.getElementById('departmentChart'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Số lượng nhân viên',
+          data: data,
+          backgroundColor: colors.slice(0, labels.length)
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { stepSize: 1 } }
+        }
+      }
+    });
+
+    // Pie Chart
+    new Chart(document.getElementById('pieChart'), {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          data: data,
+          backgroundColor: colors.slice(0, labels.length)
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 } } }
+        }
+      }
+    });
+
+    // Gọi REST API để làm mới dữ liệu
+    function refreshFromApi() {
+      fetch('/api/employees/statistics')
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+          console.log('Statistics from REST API:', data);
+          document.getElementById('refreshStatus').style.display = 'inline';
+          setTimeout(function() {
+            document.getElementById('refreshStatus').style.display = 'none';
+          }, 2000);
+          // Reload trang để cập nhật
+          location.reload();
+        })
+        .catch(function(err) {
+          console.error('Error fetching statistics:', err);
+          alert('Lỗi khi tải dữ liệu từ API!');
+        });
+    }
+  </script>
+</body>
+</html>

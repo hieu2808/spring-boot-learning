@@ -6,13 +6,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 </head>
 <body>
-  <nav class="navbar navbar-expand navbar-dark bg-dark px-3">
-    <a class="navbar-brand" href="/">Employee Management</a>
-    <ul class="navbar-nav">
-      <li class="nav-item"><a class="nav-link active" href="/employees/list">Nhân viên</a></li>
-      <li class="nav-item"><a class="nav-link" href="/departments/list">Phòng ban</a></li>
-    </ul>
-  </nav>
+  <nav th:replace="~{common/navbar :: navbar('employees')}"></nav>
   <div class="container mt-4">
     <h2 class="mb-4">Tìm kiếm nhân viên</h2>
     <form th:action="@{/employees/search}" method="post" class="card p-4 shadow-sm mb-4">

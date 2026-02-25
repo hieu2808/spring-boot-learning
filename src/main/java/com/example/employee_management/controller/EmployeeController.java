@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.employee_management.dto.EmployeeStatisticsDTO;
 import com.example.employee_management.entity.Department;
 import com.example.employee_management.entity.Employee;
 import com.example.employee_management.service.DepartmentService;
@@ -55,6 +56,13 @@ public class EmployeeController {
   public String showSearchForm(Model model) {
     model.addAttribute("departments", departmentService.getAllDepartments());
     return "employee/search";
+  }
+
+  @GetMapping("/statistics")
+  public String showStatistics(Model model) {
+    EmployeeStatisticsDTO statistics = employeeService.getFullStatistics();
+    model.addAttribute("stats", statistics);
+    return "employee/statistics";
   }
 
   @PostMapping("/search")
