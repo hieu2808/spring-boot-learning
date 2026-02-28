@@ -16,6 +16,9 @@ import com.example.employee_management.entity.Employee;
 import com.example.employee_management.repository.DepartmentRepository;
 import com.example.employee_management.repository.EmployeeRepository;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class EmployeeService {
 
@@ -96,39 +99,69 @@ public class EmployeeService {
   }
 
   public Employee createEmployee(Employee employee) {
+    log.info("Creating employee with email: {}", employee.getEmail());
+
     if (employeeRepository.existsByEmail(employee.getEmail())) {
+      log.warn("Duplicate email detected: {}", employee.getEmail());
       throw new RuntimeException("Employee with email '" + employee.getEmail() + "' already exists");
     }
 
     // Verify department exists
     if (employee.getDepartment() != null && employee.getDepartment().getId() != null) {
+      log.debug("Looking up department with id: {}", employee.getDepartment().getId());
       Department department = departmentRepository.findById(employee.getDepartment().getId())
-          .orElseThrow(() -> new RuntimeException("Department not found with id: " + employee.getDepartment().getId()));
+          .orElseThrow(() -> {
+            log.error("Department not found with id: {}", employee.getDepartment().getId());
+            return new RuntimeException("Department not found with id: " + employee.getDepartment().getId());
+          });
       employee.setDepartment(department);
     }
 
-    return employeeRepository.save(employee);
+    Employee saved = employeeRepository.save(employee);
+    log.info("Employee created successfully - id: {}, name: {}, email: {}", saved.getId(), saved.getName(), saved.getEmail());
+    return saved;
   }
 
   public Employee updateEmployee(Long id, Employee employeeDetails) {
+    log.info("Updating employee with id: {}", id);
+
     Employee employee = employeeRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
+        .orElseThrow(() -> {
+          log.error("Employee not found for update, id: {}", id);
+          return new RuntimeException("Employee not found with id: " + id);
+        });
+
+    log.debug("Updating employee: name [{}] -> [{}], email [{}] -> [{}]",
+        employee.getName(), employeeDetails.getName(),
+        employee.getEmail(), employeeDetails.getEmail());
 
     employee.setName(employeeDetails.getName());
     employee.setEmail(employeeDetails.getEmail());
 
     if (employeeDetails.getDepartment() != null && employeeDetails.getDepartment().getId() != null) {
       Department department = departmentRepository.findById(employeeDetails.getDepartment().getId())
-          .orElseThrow(() -> new RuntimeException("Department not found with id: " + employeeDetails.getDepartment().getId()));
+          .orElseThrow(() -> {
+            log.error("Department not found with id: {}", employeeDetails.getDepartment().getId());
+            return new RuntimeException("Department not found with id: " + employeeDetails.getDepartment().getId());
+          });
       employee.setDepartment(department);
     }
 
-    return employeeRepository.save(employee);
+    Employee updated = employeeRepository.save(employee);
+    log.info("Employee updated successfully - id: {}, name: {}", updated.getId(), updated.getName());
+    return updated;
   }
 
   public void deleteEmployee(Long id) {
+    log.info("Deleting employee with id: {}", id);
+
     Employee employee = employeeRepository.findById(id)
-        .orElseThrow(() -> new RuntimeException("Employee not found with id: " + id));
+        .orElseThrow(() -> {
+          log.error("Employee not found for deletion, id: {}", id);
+          return new RuntimeException("Employee not found with id: " + id);
+        });
+
     employeeRepository.delete(employee);
+    log.info("Employee deleted successfully - id: {}, name: {}", id, employee.getName());
   }
 }
