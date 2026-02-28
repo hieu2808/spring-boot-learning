@@ -5,17 +5,22 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.employee_management.dto.EmployeeStatisticsDTO;
 import com.example.employee_management.entity.Department;
 import com.example.employee_management.entity.Employee;
+import com.example.employee_management.exception.DuplicateResourceException;
 import com.example.employee_management.service.DepartmentService;
 import com.example.employee_management.service.EmployeeService;
+
+import jakarta.validation.Valid;
 
 @Controller
 @RequestMapping("/employees")
@@ -42,14 +47,33 @@ public class EmployeeController {
   }
 
   @PostMapping("/add")
-  public String addEmployee(@ModelAttribute Employee employee) {
+  public String addEmployee(@Valid @ModelAttribute Employee employee,
+      BindingResult bindingResult,
+      Model model,
+      RedirectAttributes redirectAttributes) {
+
+    // Nếu validation fail → quay lại form, hiện lỗi
+    if (bindingResult.hasErrors()) {
+      model.addAttribute("departments", departmentService.getAllDepartments());
+      return "employee/add";
+    }
+
+    // Gán department từ DB
     if (employee.getDepartment() != null && employee.getDepartment().getId() != null) {
       Department department = departmentService.getDepartmentById(employee.getDepartment().getId())
           .orElse(null);
       employee.setDepartment(department);
     }
-    employeeService.createEmployee(employee);
-    return "redirect:/employees/list";
+
+    try {
+      employeeService.createEmployee(employee);
+      redirectAttributes.addFlashAttribute("successMessage", "Thêm nhân viên thành công!");
+      return "redirect:/employees/list";
+    } catch (DuplicateResourceException ex) {
+      bindingResult.rejectValue("email", "duplicate", ex.getMessage());
+      model.addAttribute("departments", departmentService.getAllDepartments());
+      return "employee/add";
+    }
   }
 
   @GetMapping("/search")

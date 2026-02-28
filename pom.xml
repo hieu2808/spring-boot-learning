@@ -63,6 +63,12 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Validation: @NotBlank, @Email, @Size, @Valid -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+
 		<!-- Lombok: @Slf4j cho logging, giảm boilerplate -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>

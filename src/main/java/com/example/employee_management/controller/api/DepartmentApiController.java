@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.employee_management.entity.Department;
+import com.example.employee_management.exception.ResourceNotFoundException;
 import com.example.employee_management.service.DepartmentService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/departments")
@@ -32,45 +35,34 @@ public class DepartmentApiController {
 
   @GetMapping("/{id}")
   public ResponseEntity<Department> getDepartmentById(@PathVariable Long id) {
-    return departmentService.getDepartmentById(id)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
+    Department department = departmentService.getDepartmentById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Department", "id", id));
+    return ResponseEntity.ok(department);
   }
 
   @GetMapping("/name/{name}")
   public ResponseEntity<Department> getDepartmentByName(@PathVariable String name) {
-    return departmentService.getDepartmentByName(name)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
+    Department department = departmentService.getDepartmentByName(name)
+        .orElseThrow(() -> new ResourceNotFoundException("Department", "name", name));
+    return ResponseEntity.ok(department);
   }
 
   @PostMapping
-  public ResponseEntity<Department> createDepartment(@RequestBody Department department) {
-    try {
-      Department createdDepartment = departmentService.createDepartment(department);
-      return ResponseEntity.status(HttpStatus.CREATED).body(createdDepartment);
-    } catch (RuntimeException e) {
-      return ResponseEntity.badRequest().build();
-    }
+  public ResponseEntity<Department> createDepartment(@Valid @RequestBody Department department) {
+    Department createdDepartment = departmentService.createDepartment(department);
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdDepartment);
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<Department> updateDepartment(@PathVariable Long id, @RequestBody Department department) {
-    try {
-      Department updatedDepartment = departmentService.updateDepartment(id, department);
-      return ResponseEntity.ok(updatedDepartment);
-    } catch (RuntimeException e) {
-      return ResponseEntity.notFound().build();
-    }
+  public ResponseEntity<Department> updateDepartment(@PathVariable Long id,
+      @Valid @RequestBody Department department) {
+    Department updatedDepartment = departmentService.updateDepartment(id, department);
+    return ResponseEntity.ok(updatedDepartment);
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteDepartment(@PathVariable Long id) {
-    try {
-      departmentService.deleteDepartment(id);
-      return ResponseEntity.noContent().build();
-    } catch (RuntimeException e) {
-      return ResponseEntity.notFound().build();
-    }
+    departmentService.deleteDepartment(id);
+    return ResponseEntity.noContent().build();
   }
 }

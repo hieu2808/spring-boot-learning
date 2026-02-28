@@ -9,22 +9,32 @@
   <nav th:replace="~{common/navbar :: navbar('employees')}"></nav>
   <div class="container mt-4">
     <h2 class="mb-4">Thêm nhân viên mới</h2>
-    <form th:action="@{/employees/add}" method="post" class="card p-4 shadow-sm">
+    <form th:action="@{/employees/add}" th:object="${employee}" method="post" class="card p-4 shadow-sm">
+
       <div class="mb-3">
         <label class="form-label">Tên</label>
-        <input type="text" name="name" class="form-control" required>
+        <input type="text" th:field="*{name}" class="form-control"
+               th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'">
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
       </div>
+
       <div class="mb-3">
         <label class="form-label">Email</label>
-        <input type="email" name="email" class="form-control" required>
+        <input type="email" th:field="*{email}" class="form-control"
+               th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
       </div>
+
       <div class="mb-3">
         <label class="form-label">Phòng ban</label>
-        <select name="department.id" class="form-select" required>
+        <select th:field="*{department.id}" class="form-select"
+                th:classappend="${#fields.hasErrors('department')} ? 'is-invalid'">
           <option value="">-- Chọn phòng ban --</option>
           <option th:each="dept : ${departments}" th:value="${dept.id}" th:text="${dept.name}"></option>
         </select>
+        <div class="invalid-feedback" th:if="${#fields.hasErrors('department')}" th:errors="*{department}"></div>
       </div>
+
       <div>
         <button type="submit" class="btn btn-success">Thêm</button>
         <a href="/employees/list" class="btn btn-secondary ms-2">Quay lại</a>

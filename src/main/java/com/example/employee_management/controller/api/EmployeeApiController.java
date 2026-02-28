@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.employee_management.entity.Employee;
+import com.example.employee_management.exception.ResourceNotFoundException;
 import com.example.employee_management.service.EmployeeService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/employees")
@@ -32,16 +35,16 @@ public class EmployeeApiController {
 
   @GetMapping("/{id}")
   public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
-    return employeeService.getEmployeeById(id)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
+    Employee employee = employeeService.getEmployeeById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("Employee", "id", id));
+    return ResponseEntity.ok(employee);
   }
 
   @GetMapping("/email/{email}")
   public ResponseEntity<Employee> getEmployeeByEmail(@PathVariable String email) {
-    return employeeService.getEmployeeByEmail(email)
-        .map(ResponseEntity::ok)
-        .orElse(ResponseEntity.notFound().build());
+    Employee employee = employeeService.getEmployeeByEmail(email)
+        .orElseThrow(() -> new ResourceNotFoundException("Employee", "email", email));
+    return ResponseEntity.ok(employee);
   }
 
   @GetMapping("/department/{departmentId}")
@@ -51,32 +54,21 @@ public class EmployeeApiController {
   }
 
   @PostMapping
-  public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
-    try {
-      Employee createdEmployee = employeeService.createEmployee(employee);
-      return ResponseEntity.status(HttpStatus.CREATED).body(createdEmployee);
-    } catch (RuntimeException e) {
-      return ResponseEntity.badRequest().build();
-    }
+  public ResponseEntity<Employee> createEmployee(@Valid @RequestBody Employee employee) {
+    Employee createdEmployee = employeeService.createEmployee(employee);
+    return ResponseEntity.status(HttpStatus.CREATED).body(createdEmployee);
   }
 
   @PutMapping("/{id}")
-  public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employee) {
-    try {
-      Employee updatedEmployee = employeeService.updateEmployee(id, employee);
-      return ResponseEntity.ok(updatedEmployee);
-    } catch (RuntimeException e) {
-      return ResponseEntity.notFound().build();
-    }
+  public ResponseEntity<Employee> updateEmployee(@PathVariable Long id,
+      @Valid @RequestBody Employee employee) {
+    Employee updatedEmployee = employeeService.updateEmployee(id, employee);
+    return ResponseEntity.ok(updatedEmployee);
   }
 
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
-    try {
-      employeeService.deleteEmployee(id);
-      return ResponseEntity.noContent().build();
-    } catch (RuntimeException e) {
-      return ResponseEntity.notFound().build();
-    }
+    employeeService.deleteEmployee(id);
+    return ResponseEntity.noContent().build();
   }
 }

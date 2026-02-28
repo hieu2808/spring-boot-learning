@@ -11,6 +11,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "employees")
@@ -21,12 +25,17 @@ public class Employee {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @NotBlank(message = "Tên nhân viên không được để trống")
+  @Size(min = 2, max = 100, message = "Tên nhân viên phải từ 2 đến 100 ký tự")
   @Column(nullable = false)
   private String name;
 
+  @NotBlank(message = "Email không được để trống")
+  @Email(message = "Email không đúng định dạng")
   @Column(nullable = false, unique = true)
   private String email;
 
+  @NotNull(message = "Phòng ban không được để trống")
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "department_id", nullable = false)
   private Department department;

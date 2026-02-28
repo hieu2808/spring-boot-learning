@@ -13,6 +13,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "departments")
@@ -23,9 +25,12 @@ public class Department {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @NotBlank(message = "Tên phòng ban không được để trống")
+  @Size(min = 2, max = 100, message = "Tên phòng ban phải từ 2 đến 100 ký tự")
   @Column(nullable = false, unique = true)
   private String name;
 
+  @Size(max = 500, message = "Mô tả không được vượt quá 500 ký tự")
   @Column(length = 500)
   private String description;
 

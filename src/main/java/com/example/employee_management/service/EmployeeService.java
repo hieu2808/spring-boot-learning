@@ -13,6 +13,8 @@ import com.example.employee_management.dto.DepartmentStatDTO;
 import com.example.employee_management.dto.EmployeeStatisticsDTO;
 import com.example.employee_management.entity.Department;
 import com.example.employee_management.entity.Employee;
+import com.example.employee_management.exception.DuplicateResourceException;
+import com.example.employee_management.exception.ResourceNotFoundException;
 import com.example.employee_management.repository.DepartmentRepository;
 import com.example.employee_management.repository.EmployeeRepository;
 
@@ -103,7 +105,7 @@ public class EmployeeService {
 
     if (employeeRepository.existsByEmail(employee.getEmail())) {
       log.warn("Duplicate email detected: {}", employee.getEmail());
-      throw new RuntimeException("Employee with email '" + employee.getEmail() + "' already exists");
+      throw new DuplicateResourceException("Employee", "email", employee.getEmail());
     }
 
     // Verify department exists
@@ -112,7 +114,7 @@ public class EmployeeService {
       Department department = departmentRepository.findById(employee.getDepartment().getId())
           .orElseThrow(() -> {
             log.error("Department not found with id: {}", employee.getDepartment().getId());
-            return new RuntimeException("Department not found with id: " + employee.getDepartment().getId());
+            return new ResourceNotFoundException("Department", "id", employee.getDepartment().getId());
           });
       employee.setDepartment(department);
     }
@@ -128,7 +130,7 @@ public class EmployeeService {
     Employee employee = employeeRepository.findById(id)
         .orElseThrow(() -> {
           log.error("Employee not found for update, id: {}", id);
-          return new RuntimeException("Employee not found with id: " + id);
+          return new ResourceNotFoundException("Employee", "id", id);
         });
 
     log.debug("Updating employee: name [{}] -> [{}], email [{}] -> [{}]",
@@ -142,7 +144,7 @@ public class EmployeeService {
       Department department = departmentRepository.findById(employeeDetails.getDepartment().getId())
           .orElseThrow(() -> {
             log.error("Department not found with id: {}", employeeDetails.getDepartment().getId());
-            return new RuntimeException("Department not found with id: " + employeeDetails.getDepartment().getId());
+            return new ResourceNotFoundException("Department", "id", employeeDetails.getDepartment().getId());
           });
       employee.setDepartment(department);
     }
@@ -158,7 +160,7 @@ public class EmployeeService {
     Employee employee = employeeRepository.findById(id)
         .orElseThrow(() -> {
           log.error("Employee not found for deletion, id: {}", id);
-          return new RuntimeException("Employee not found with id: " + id);
+          return new ResourceNotFoundException("Employee", "id", id);
         });
 
     employeeRepository.delete(employee);

@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.employee_management.entity.Department;
+import com.example.employee_management.exception.DuplicateResourceException;
+import com.example.employee_management.exception.ResourceNotFoundException;
 import com.example.employee_management.repository.DepartmentRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +37,7 @@ public class DepartmentService {
 
     if (departmentRepository.existsByName(department.getName())) {
       log.warn("Duplicate department name detected: {}", department.getName());
-      throw new RuntimeException("Department with name '" + department.getName() + "' already exists");
+      throw new DuplicateResourceException("Department", "name", department.getName());
     }
 
     Department saved = departmentRepository.save(department);
@@ -49,10 +51,17 @@ public class DepartmentService {
     Department department = departmentRepository.findById(id)
         .orElseThrow(() -> {
           log.error("Department not found for update, id: {}", id);
-          return new RuntimeException("Department not found with id: " + id);
+          return new ResourceNotFoundException("Department", "id", id);
         });
 
     log.debug("Updating department: name [{}] -> [{}]", department.getName(), departmentDetails.getName());
+
+    // Kiểm tra trùng tên khi đổi tên
+    if (!department.getName().equals(departmentDetails.getName())
+        && departmentRepository.existsByName(departmentDetails.getName())) {
+      log.warn("Duplicate department name detected on update: {}", departmentDetails.getName());
+      throw new DuplicateResourceException("Department", "name", departmentDetails.getName());
+    }
 
     department.setName(departmentDetails.getName());
     department.setDescription(departmentDetails.getDescription());
@@ -68,7 +77,7 @@ public class DepartmentService {
     Department department = departmentRepository.findById(id)
         .orElseThrow(() -> {
           log.error("Department not found for deletion, id: {}", id);
-          return new RuntimeException("Department not found with id: " + id);
+          return new ResourceNotFoundException("Department", "id", id);
         });
 
     departmentRepository.delete(department);
