@@ -28,13 +28,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
   @Query("SELECT e.department.name, COUNT(e) FROM Employee e GROUP BY e.department.name ORDER BY COUNT(e) DESC")
   List<Object[]> countEmployeesByDepartment();
 
-  // @Query: Tìm phòng ban có nhiều nhân viên nhất
-  @Query("SELECT e.department.name, COUNT(e) as cnt FROM Employee e GROUP BY e.department.name ORDER BY cnt DESC LIMIT 1")
-  Object[] findDepartmentWithMostEmployees();
+  // @Query: Tìm phòng ban có nhiều nhân viên nhất (bao gồm cả PB có 0 NV)
+  @Query("SELECT d.name, COUNT(e) as cnt FROM Department d LEFT JOIN d.employees e GROUP BY d.name ORDER BY cnt DESC LIMIT 1")
+  List<Object[]> findDepartmentWithMostEmployees();
 
-  // @Query: Tìm phòng ban có ít nhân viên nhất
-  @Query("SELECT e.department.name, COUNT(e) as cnt FROM Employee e GROUP BY e.department.name ORDER BY cnt ASC LIMIT 1")
-  Object[] findDepartmentWithLeastEmployees();
+  // @Query: Tìm phòng ban có ít nhân viên nhất (bao gồm cả PB có 0 NV)
+  @Query("SELECT d.name, COUNT(e) as cnt FROM Department d LEFT JOIN d.employees e GROUP BY d.name ORDER BY cnt ASC LIMIT 1")
+  List<Object[]> findDepartmentWithLeastEmployees();
 
   // @Query: Đếm số phòng ban có nhân viên
   @Query("SELECT COUNT(DISTINCT e.department) FROM Employee e")

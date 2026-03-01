@@ -106,15 +106,17 @@ public class EmployeeService {
     dto.setDepartmentStats(departmentStats);
 
     // Phòng ban nhiều nhân viên nhất (dùng @Query)
-    Object[] most = employeeRepository.findDepartmentWithMostEmployees();
-    if (most != null && most.length == 2) {
+    List<Object[]> mostList = employeeRepository.findDepartmentWithMostEmployees();
+    if (mostList != null && !mostList.isEmpty()) {
+      Object[] most = mostList.get(0);
       dto.setDepartmentWithMostEmployees((String) most[0]);
       dto.setMostEmployeesCount((Long) most[1]);
     }
 
     // Phòng ban ít nhân viên nhất (dùng @Query)
-    Object[] least = employeeRepository.findDepartmentWithLeastEmployees();
-    if (least != null && least.length == 2) {
+    List<Object[]> leastList = employeeRepository.findDepartmentWithLeastEmployees();
+    if (leastList != null && !leastList.isEmpty()) {
+      Object[] least = leastList.get(0);
       dto.setDepartmentWithLeastEmployees((String) least[0]);
       dto.setLeastEmployeesCount((Long) least[1]);
     }
