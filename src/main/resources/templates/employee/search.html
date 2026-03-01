@@ -35,6 +35,7 @@
         <thead class="table-light">
           <tr>
             <th>ID</th>
+            <th>Mã NV</th>
             <th>Tên</th>
             <th>Email</th>
             <th>Phòng ban</th>
@@ -43,6 +44,7 @@
         <tbody>
           <tr th:each="employee : ${employees}">
             <td th:text="${employee.id}"></td>
+            <td><span class="badge bg-secondary" th:text="${employee.employeeCode}"></span></td>
             <td th:text="${employee.name}"></td>
             <td th:text="${employee.email}"></td>
             <td th:text="${employee.department.name}"></td>

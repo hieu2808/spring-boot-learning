@@ -2,7 +2,6 @@ package com.example.employee_management.controller;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,6 +18,7 @@ import com.example.employee_management.entity.Employee;
 import com.example.employee_management.exception.DuplicateResourceException;
 import com.example.employee_management.service.DepartmentService;
 import com.example.employee_management.service.EmployeeService;
+import com.example.employee_management.service.UtilityService;
 
 import jakarta.validation.Valid;
 
@@ -26,16 +26,30 @@ import jakarta.validation.Valid;
 @RequestMapping("/employees")
 public class EmployeeController {
 
-  @Autowired
-  private EmployeeService employeeService;
+  private final EmployeeService employeeService;
+  private final DepartmentService departmentService;
 
-  @Autowired
-  private DepartmentService departmentService;
+  // Inject UtilityService để dùng ở view layer
+  private final UtilityService utilityService;
+
+  /**
+   * Constructor Injection – không cần @Autowired khi chỉ có 1 constructor.
+   * Spring tự động nhận diện và inject đúng bean.
+   */
+  public EmployeeController(EmployeeService employeeService,
+                             DepartmentService departmentService,
+                             UtilityService utilityService) {
+    this.employeeService = employeeService;
+    this.departmentService = departmentService;
+    this.utilityService = utilityService;
+  }
 
   @GetMapping("/list")
   public String listEmployees(Model model) {
     List<Employee> employees = employeeService.getAllEmployees();
     model.addAttribute("employees", employees);
+    // Dùng UtilityService để thêm timestamp hiển thị lên view
+    model.addAttribute("generatedAt", utilityService.getCurrentTimestamp());
     return "employee/list";
   }
 
@@ -108,5 +122,13 @@ public class EmployeeController {
     model.addAttribute("name", name);
     model.addAttribute("departmentId", departmentId);
     return "employee/search";
+  }
+
+  @PostMapping("/delete/{id}")
+  public String deleteEmployee(@org.springframework.web.bind.annotation.PathVariable Long id,
+                               RedirectAttributes redirectAttributes) {
+    employeeService.deleteEmployee(id);
+    redirectAttributes.addFlashAttribute("successMessage", "Xóa nhân viên thành công!");
+    return "redirect:/employees/list";
   }
 }

@@ -9,6 +9,11 @@
   <nav th:replace="~{common/navbar :: navbar('employees')}"></nav>
   <div class="container mt-4">
     <h2 class="mb-4">Thêm nhân viên mới</h2>
+    <div class="alert alert-info mb-3">
+      <i class="bi bi-info-circle"></i>
+      <strong>Mã nhân viên</strong> sẽ được tự động sinh bởi hệ thống (định dạng: EMP-YYYYMMDD-XXXX).
+      Họ tên sẽ được tự động viết hoa chữ cái đầu mỗi từ.
+    </div>
     <form th:action="@{/employees/add}" th:object="${employee}" method="post" class="card p-4 shadow-sm">
 
       <div class="mb-3">

@@ -25,6 +25,9 @@ public class Employee {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @Column(name = "employee_code", nullable = false, unique = true, length = 20)
+  private String employeeCode;
+
   @NotBlank(message = "Tên nhân viên không được để trống")
   @Size(min = 2, max = 100, message = "Tên nhân viên phải từ 2 đến 100 ký tự")
   @Column(nullable = false)
@@ -44,7 +47,8 @@ public class Employee {
   public Employee() {
   }
 
-  public Employee(String name, String email, Department department) {
+  public Employee(String employeeCode, String name, String email, Department department) {
+    this.employeeCode = employeeCode;
     this.name = name;
     this.email = email;
     this.department = department;
@@ -57,6 +61,14 @@ public class Employee {
 
   public void setId(Long id) {
     this.id = id;
+  }
+
+  public String getEmployeeCode() {
+    return employeeCode;
+  }
+
+  public void setEmployeeCode(String employeeCode) {
+    this.employeeCode = employeeCode;
   }
 
   public String getName() {
@@ -87,6 +99,7 @@ public class Employee {
   public String toString() {
     return "Employee{" +
         "id=" + id +
+        ", employeeCode='" + employeeCode + '\'' +
         ", name='" + name + '\'' +
         ", email='" + email + '\'' +
         ", departmentId=" + (department != null ? department.getId() : null) +

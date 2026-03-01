@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.ModelMapper;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -25,11 +25,42 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 public class EmployeeService {
 
-  @Autowired
-  private EmployeeRepository employeeRepository;
+  private final EmployeeRepository employeeRepository;
+  private final DepartmentRepository departmentRepository;
 
-  @Autowired
-  private DepartmentRepository departmentRepository;
+  // Inject UtilityService (@Service bean) qua Constructor Injection
+  private final UtilityService utilityService;
+
+  // Inject ModelMapper (@Bean từ AppConfig) qua Constructor Injection
+  private final ModelMapper modelMapper;
+
+  /**
+   * Constructor Injection – Spring tự động inject tất cả dependencies.
+   * Đây là cách inject được khuyến nghị: không cần @Autowired,
+   * dễ test (có thể truyền mock), đảm bảo immutability (final fields).
+   */
+  public EmployeeService(EmployeeRepository employeeRepository,
+                         DepartmentRepository departmentRepository,
+                         UtilityService utilityService,
+                         ModelMapper modelMapper) {
+    this.employeeRepository = employeeRepository;
+    this.departmentRepository = departmentRepository;
+    this.utilityService = utilityService;
+    this.modelMapper = modelMapper;
+  }
+
+  // ===== Sử dụng ModelMapper Bean =====
+
+  /**
+   * Map một Employee entity sang một Employee copy (ví dụ để trả về DTO).
+   * Minh họa việc sử dụng ModelMapper bean được định nghĩa qua @Bean trong AppConfig.
+   *
+   * @param source Employee nguồn
+   * @return Employee mới được map từ source
+   */
+  public Employee mapEmployee(Employee source) {
+    return modelMapper.map(source, Employee.class);
+  }
 
   // ===== Thống kê =====
 
@@ -115,6 +146,16 @@ public class EmployeeService {
       throw new DuplicateResourceException("Employee", "email", employee.getEmail());
     }
 
+    // Tự động sinh mã nhân viên bằng UtilityService
+    String code = utilityService.generateEmployeeCode();
+    employee.setEmployeeCode(code);
+    log.debug("Generated employee code: {}", code);
+
+    // Format họ tên chuẩn (capitalize) bằng UtilityService
+    if (employee.getName() != null) {
+      employee.setName(utilityService.capitalizeName(employee.getName()));
+    }
+
     // Verify department exists
     if (employee.getDepartment() != null && employee.getDepartment().getId() != null) {
       log.debug("Looking up department with id: {}", employee.getDepartment().getId());
@@ -127,7 +168,8 @@ public class EmployeeService {
     }
 
     Employee saved = employeeRepository.save(employee);
-    log.info("Employee created successfully - id: {}, name: {}, email: {}", saved.getId(), saved.getName(), saved.getEmail());
+    log.info("Employee created successfully - id: {}, code: {}, name: {}, email: {}",
+        saved.getId(), saved.getEmployeeCode(), saved.getName(), saved.getEmail());
     return saved;
   }
 
@@ -144,7 +186,8 @@ public class EmployeeService {
         employee.getName(), employeeDetails.getName(),
         employee.getEmail(), employeeDetails.getEmail());
 
-    employee.setName(employeeDetails.getName());
+    // Format tên chuẩn khi cập nhật (dùng UtilityService)
+    employee.setName(utilityService.capitalizeName(employeeDetails.getName()));
     employee.setEmail(employeeDetails.getEmail());
 
     if (employeeDetails.getDepartment() != null && employeeDetails.getDepartment().getId() != null) {
