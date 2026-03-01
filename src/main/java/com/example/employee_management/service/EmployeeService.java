@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.example.employee_management.dto.DepartmentStatDTO;
@@ -32,7 +33,13 @@ public class EmployeeService {
 
   // ===== Thống kê =====
 
+  /**
+   * Tổng số nhân viên — kết quả được cache 1 phút.
+   * Cache tên "totalEmployees" được cấu hình TTL trong CacheConfig.
+   */
+  @Cacheable("totalEmployees")
   public long getTotalEmployeeCount() {
+    log.info(">>> [Cache MISS] Đang truy vấn DB để lấy tổng số nhân viên...");
     return employeeRepository.countTotalEmployees();
   }
 
