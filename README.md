@@ -2,6 +2,8 @@
 
 Hệ thống quản lý nhân viên xây dựng bằng **Spring Boot 4**, hỗ trợ giao diện web (Thymeleaf) và REST API với xác thực JWT.
 
+<img width="1863" height="519" alt="image" src="https://github.com/user-attachments/assets/a9c4cd32-b924-4fbc-b836-c7e2a5f2d010" />
+
 ---
 
 ## 📋 Mô tả hệ thống
