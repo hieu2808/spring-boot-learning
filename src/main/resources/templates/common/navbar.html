@@ -1,17 +1,35 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
   <nav th:fragment="navbar(activeMenu)" class="navbar navbar-expand navbar-dark bg-dark px-3">
     <a class="navbar-brand" href="/">Employee Management</a>
-    <ul class="navbar-nav">
+    <ul class="navbar-nav me-auto">
       <li class="nav-item">
         <a class="nav-link" th:classappend="${activeMenu == 'employees'} ? 'active'" href="/employees/list">Nhân viên</a>
       </li>
-      <li class="nav-item">
+      <!-- Chỉ ADMIN mới thấy các menu sau -->
+      <li class="nav-item" sec:authorize="hasRole('ADMIN')">
         <a class="nav-link" th:classappend="${activeMenu == 'departments'} ? 'active'" href="/departments/list">Phòng ban</a>
       </li>
-      <li class="nav-item">
+      <li class="nav-item" sec:authorize="hasRole('ADMIN')">
         <a class="nav-link" th:classappend="${activeMenu == 'statistics'} ? 'active'" href="/employees/statistics">Thống kê</a>
+      </li>
+    </ul>
+    <!-- Hiển thị username + nút Logout khi đã đăng nhập -->
+    <ul class="navbar-nav ms-auto" sec:authorize="isAuthenticated()">
+      <li class="nav-item">
+        <span class="navbar-text text-light me-3">
+          Xin chào, <strong sec:authentication="name"></strong>
+          <span sec:authorize="hasRole('ADMIN')" class="badge bg-danger ms-1">ADMIN</span>
+          <span sec:authorize="hasRole('MANAGER')" class="badge bg-warning ms-1">MANAGER</span>
+          <span sec:authorize="hasRole('USER')" class="badge bg-secondary ms-1">USER</span>
+        </span>
+      </li>
+      <li class="nav-item">
+        <form th:action="@{/logout}" method="post" class="d-inline">
+          <button type="submit" class="btn btn-outline-light btn-sm">Đăng xuất</button>
+        </form>
       </li>
     </ul>
   </nav>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
   <meta charset="UTF-8">
   <title>Danh sách nhân viên</title>
@@ -22,7 +23,7 @@
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <div class="mb-3">
+    <div class="mb-3" sec:authorize="hasRole('ADMIN')">
       <a class="btn btn-success" href="/employees/add">Thêm nhân viên mới</a>
       <a class="btn btn-primary ms-2" href="/employees/search">Tìm kiếm</a>
     </div>
@@ -34,7 +35,7 @@
           <th>Tên</th>
           <th>Email</th>
           <th>Phòng ban</th>
-          <th>Thao tác</th>
+          <th sec:authorize="hasRole('ADMIN')">Thao tác</th>
         </tr>
       </thead>
       <tbody>
@@ -44,7 +45,7 @@
           <td th:text="${employee.name}"></td>
           <td th:text="${employee.email}"></td>
           <td th:text="${employee.department.name}"></td>
-          <td>
+          <td sec:authorize="hasRole('ADMIN')">
             <form th:action="@{/employees/delete/{id}(id=${employee.id})}" method="post"
                   onsubmit="return confirm('Xác nhận xóa nhân viên này?')">
               <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
